@@ -7,7 +7,7 @@
 ```
 ├── api/
 │   └── chat.js              # Vercel Serverless Function (处理 /api/chat)
-├── chat-backend/             # Express 后端（本地开发/自部署用）
+├── chat-backend/             # Express 后端（本地开发 / Linux 自部署用）
 │   ├── server.js
 │   └── .env
 ├── patches/                  # vetradocs-docusaurus 补丁
@@ -56,17 +56,42 @@ yarn dev
 
 前端开发服务器自动代理 `/api/chat` 到后端。
 
-## 部署（统一用 Vercel）
+### 构建
 
-前端和后端可以一起部署到 Vercel，无需单独服务器。
+```bash
+yarn build
+# 1. docusaurus build        → 生成 build/
+# 2. build-index.mjs         → 生成 static/search-index.json
+# 3. cp 到 build/            → 供生产环境使用
+```
+
+---
+
+## 部署方案对比
+
+本项目支持两种部署方式，任选其一：
+
+| 方案 | 适用场景 | 复杂度 | 成本 |
+|------|----------|--------|------|
+| **方案 A：Vercel 一体化部署** | 小规模使用，不想管理服务器 | 低 | Vercel Hobby 免费 + DeepSeek API 按量付费 |
+| **方案 B：自建 Linux 服务器** | 需要控制后端，大规模使用 | 中 | 服务器费用 + DeepSeek API 按量付费 |
+
+---
+
+## 方案 A：Vercel 一键部署（推荐）
+
+前端（Docusaurus）和后端（API）部署在同一个 Vercel 项目，无需单独服务器。
 
 ### 架构
 
 ```
-Vercel
-├── /            → Docusaurus 静态站点 (build/)
-└── /api/chat    → Serverless Function (api/chat.js)
-                    → 调用 DeepSeek API + RAG context
+用户浏览器
+    │
+    ▼
+Vercel CDN
+    ├── /               → Docusaurus 静态文件 (build/)
+    └── /api/chat       → Serverless Function (api/chat.js)
+                            └── 调用 DeepSeek API
 ```
 
 ### 部署步骤
@@ -74,71 +99,219 @@ Vercel
 1. **推送代码到 GitHub**
 
 2. **在 Vercel 导入项目**
-   - Vercel 自动检测 Docusaurus，使用 `yarn build` 构建
-   - `api/chat.js` 自动识别为 Serverless Function
+   - 项目根目录 `./`，Vercel 自动检测 Docusaurus
+   - 无需修改构建设置，`vercel.json` 已配置
 
-3. **设置环境变量**（Vercel Dashboard → Settings → Environment Variables）
+3. **设置环境变量**
 
-   必须添加以下变量：
+   在 Vercel Dashboard → Settings → Environment Variables 添加：
 
    | 变量 | 必填 | 说明 |
    |------|------|------|
-   | `LLM_API_KEY` | **是** | DeepSeek API Key，如 `sk-xxxxxxxx` |
-   | `CHAT_API_KEY` | 推荐 | 前后端认证 Key，默认 `vzpcbu6am0dr1k056y1dgg`。不设则前后端都使用此默认值，设了则必须前后端一致。 |
-
-   > **关于 `CHAT_API_KEY`**：前后端代码都内置了默认值 `vzpcbu6am0dr1k056y1dgg`。不设环境变量也能工作。如果想自定义 Key，在 Vercel Dashboard 添加 `CHAT_API_KEY` 即可（前端构建时和 API 运行时都会读取，值必须一致）。
-
-   可选变量：
-
-   | 变量 | 说明 |
-   |------|------|
-   | `LLM_BASE_URL` | API 地址，默认 `https://api.deepseek.com/v1` |
-   | `LLM_MODEL` | 模型名，默认 `deepseek-v4-flash` |
+   | `LLM_API_KEY` | **是** | DeepSeek API Key |
+   | `LLM_BASE_URL` | 否 | 默认 `https://api.deepseek.com/v1` |
+   | `LLM_MODEL` | 否 | 默认 `deepseek-v4-flash` |
+   | `CHAT_API_KEY` | 否 | 前后端认证 key，默认 `vzpcbu6am0dr1k056y1dgg`，前后端需一致 |
 
 4. **部署完成**
-   - 前端访问 `https://你的域名.vercel.app`
-   - API 自动在 `https://你的域名.vercel.app/api/chat`
 
-> 无需设置 `CHAT_API_ENDPOINT`，前端默认使用同域路径 `/api/chat`。
+   前端 `https://你的项目名.vercel.app`，API 在同域名下的 `/api/chat`。
 
-### 构建流程
+### Vercel 配置说明
 
-```bash
-yarn build
-# 1. docusaurus build        → 生成 build/
-# 2. build-index.mjs         → 生成 static/search-index.json
-# 3. cp search-index.json     → 复制到 build/search-index.json
+**现有 `vercel.json` 内容**（位于项目根目录）：
+
+```json
+{
+  "buildCommand": "yarn build",
+  "outputDirectory": "build"
+}
 ```
 
-## 自部署后端（可选）
+Vercel 同时会把 `api/` 下的文件自动部署为 Serverless Function，无需额外配置。
 
-如果不想用 Vercel Function，也可以用独立服务器部署 `chat-backend/`：
+**构建流程**：`yarn build` 会执行：
+
+```
+docusaurus build                     → 生成 build/
+node .../build-index.mjs             → 扫描 docs/ 生成搜索索引 static/search-index.json
+cp static/search-index.json build/   → 复制到构建输出目录
+```
+
+> **注意**：`docusaurus build` 会在构建时读取 `CHAT_API_KEY` 环境变量并嵌入前端静态页面中。如果未设置该变量，则使用默认值 `vzpcbu6am0dr1k056y1dgg`。API 运行时同样读取该变量，默认值相同，因此不设也能工作。
+
+### 本地模拟 Vercel 环境
+
+如果想在本地测试 Vercel Function，可以使用 Vercel CLI：
+
+```bash
+npm install -g vercel
+vercel dev
+```
+
+`vercel dev` 会同时启动 Docusaurus 和 `api/chat.js` 函数，行为与生产环境一致。
+
+---
+
+## 方案 B：自建 Linux 服务器
+
+如果不想用 Vercel，或需要在自有服务器部署完整后端。
+
+### 架构
+
+```
+用户浏览器
+    │
+    ▼
+Nginx (反向代理)
+    ├── /               → Docusaurus 静态文件
+    └── /api/chat       → 转发到 localhost:3001
+                            └── Express (chat-backend/server.js)
+                                  └── 调用 DeepSeek API
+```
+
+### 部署步骤
+
+#### 1. 构建前端
+
+在本地或 CI 中构建：
+
+```bash
+yarn install
+yarn build
+# 生成 build/ 目录，将其部署到服务器
+```
+
+#### 2. 上传到服务器
+
+将 `build/` 和 `chat-backend/` 目录上传到 Linux 服务器。
+
+#### 3. 安装后端依赖
 
 ```bash
 cd chat-backend
 npm install
-export FRONTEND_URL=https://你的前端域名
-export LLM_API_KEY=你的DeepSeekKey
-node server.js
 ```
 
-然后用 nginx 反代 `/api/chat`。
+#### 4. 配置环境变量
 
-## 环境变量说明
+创建 `chat-backend/.env.production`（不要提交到 Git）：
 
-| 变量 | 必填 | 用途 | 生效位置 |
-|------|------|------|----------|
-| `CHAT_API_KEY` | 否（有默认值） | 前后端认证 Key，默认 `vzpcbu6am0dr1k056y1dgg` | Vercel / chat-backend / docusaurus.config.js |
-| `LLM_API_KEY` | **是** | DeepSeek API Key | Vercel / chat-backend |
-| `LLM_BASE_URL` | 否 | API 地址，默认 DeepSeek | Vercel / chat-backend |
-| `LLM_MODEL` | 否 | 模型名，默认 `deepseek-v4-flash` | Vercel / chat-backend |
+```
+PORT=3001
+FRONTEND_URL=https://你的前端域名
+CHAT_API_KEY=vzpcbu6am0dr1k056y1dgg
+LLM_API_KEY=sk-你的DeepSeekKey
+LLM_BASE_URL=https://api.deepseek.com/v1
+LLM_MODEL=deepseek-v4-flash
+```
 
-> `.env` 文件仅用于本地开发，**不会**提交到 Git。Vercel 部署时必须在 Dashboard 设置环境变量。
+或通过系统环境变量注入：
+
+```bash
+export PORT=3001
+export FRONTEND_URL=https://你的前端域名
+export LLM_API_KEY=sk-你的DeepSeekKey
+```
+
+#### 5. 使用 PM2 启动后端
+
+```bash
+# 安装 PM2
+npm install -g pm2
+
+# 启动
+pm2 start chat-backend/server.js --name chat-backend
+
+# 保存进程列表（开机自启）
+pm2 save
+pm2 startup
+```
+
+常用 PM2 命令：
+
+```bash
+pm2 status              # 查看状态
+pm2 logs chat-backend   # 查看日志
+pm2 restart chat-backend # 重启
+pm2 stop chat-backend   # 停止
+```
+
+#### 6. 配置 Nginx 反代
+
+```nginx
+# /etc/nginx/sites-available/hsy-guide
+server {
+    listen 80;
+    server_name 你的域名.com;
+
+    # 前端静态文件
+    root /path/to/build;
+    index index.html;
+
+    # API 代理
+    location /api/chat {
+        proxy_pass http://127.0.0.1:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_read_timeout 300s;
+    }
+
+    # 前端路由（SPA 支持）
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+```
+
+启用站点并重启 Nginx：
+
+```bash
+sudo ln -s /etc/nginx/sites-available/hsy-guide /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+#### 7. 配置 SSL（HTTPS）
+
+推荐使用 Let's Encrypt：
+
+```bash
+sudo apt install certbot python3-certbot-nginx
+sudo certbot --nginx -d 你的域名.com
+```
+
+---
+
+## 环境变量参考
+
+| 变量 | 必填 | 默认值 | 用途 | 生效场景 |
+|------|------|--------|------|----------|
+| `LLM_API_KEY` | **是** | 无 | DeepSeek API Key | Vercel / Linux |
+| `LLM_BASE_URL` | 否 | `https://api.deepseek.com/v1` | API 地址 | Vercel / Linux |
+| `LLM_MODEL` | 否 | `deepseek-v4-flash` | 模型名 | Vercel / Linux |
+| `CHAT_API_KEY` | 否 | `vzpcbu6am0dr1k056y1dgg` | 前后端认证 key，前后端须一致 | Vercel / Linux |
+
+> **关于 `CHAT_API_KEY`**：前后端代码都内置了默认值。不设环境变量也能工作（前后端使用相同默认值）。如需自定义，添加环境变量即可，前后端值必须一致。
+>
+> **关于 `.env` 文件**：仅用于本地开发，已加入 `.gitignore`，**不会**提交到 Git。生产环境（Vercel Dashboard 或 Linux 系统环境变量）另有配置方式。
+
+## 安全注意事项
+
+1. **API Key 保护**：`LLM_API_KEY`（DeepSeek Key）和 `CHAT_API_KEY`（认证 Key）不得泄露
+2. **Vercel 环境变量**：在 Dashboard 中设置，不要在代码中硬编码
+3. **Linux 服务器**：使用系统环境变量或 `.env.production`（加入 `.gitignore`）
+4. **HTTPS 必须**：生产环境务必配置 SSL，防止传输中泄露 API Key
+5. **CORS 限制**：Linux 部署时 `FRONTEND_URL` 设为具体域名，不要使用 `*`
 
 ## 技术栈
 
-- **前端:** Docusaurus v3, React 18
-- **搜索:** Bigram 字符匹配（替代 Orama，解决中文分词问题）
-- **AI:** DeepSeek API（模型: `deepseek-v4-flash`）
-- **后端:** Vercel Function / Express（本地开发）
-- **流式传输:** SSE
+- **前端：** Docusaurus v3, React 18
+- **搜索：** Bigram 字符匹配（替代 Orama，解决中文分词问题）
+- **AI：** DeepSeek API（模型：`deepseek-v4-flash`）
+- **后端：** Vercel Function（方案 A）/ Express（方案 B）
+- **流式传输：** SSE
