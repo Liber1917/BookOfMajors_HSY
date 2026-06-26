@@ -2,17 +2,14 @@ const OpenAI = require('openai');
 
 module.exports = async function handler(req, res) {
     if (req.method !== 'POST') {
-        res.status(405).json({ error: 'Method not allowed' });
-        return;
+        return res.status(405).json({ error: 'Method not allowed' });
     }
 
+    const authHeader = req.headers.authorization;
     const apiKey = process.env.CHAT_API_KEY || 'vzpcbu6am0dr1k056y1dgg';
-    if (apiKey && apiKey.trim() !== '') {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || authHeader !== `Bearer ${apiKey}`) {
-            res.status(401).json({ error: 'Unauthorized' });
-            return;
-        }
+
+    if (authHeader && authHeader !== `Bearer ${apiKey}`) {
+        return res.status(401).json({ error: 'Unauthorized' });
     }
 
     try {
