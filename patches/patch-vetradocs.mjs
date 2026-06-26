@@ -124,7 +124,7 @@ if (src.includes('@orama/orama')) {
   }
 }
 
-// 2g. Replace sendMessage to include RAG context with content cleaning
+// 2g. Replace sendMessage to include auth header + Chinese RAG context with content cleaning
 if (!src.includes('来源：《')) {
   const OLD_SEND = `    const sendMessage = useCallback(async (text) => {
         if (!text.trim() || loading)
@@ -136,15 +136,16 @@ if (!src.includes('来源：《')) {
         error = null;
         notify();
         try {
-            const requestHeaders = { 'Content-Type': 'application/json' };
-            if (configuredPaths.apiKey) {
-                requestHeaders['Authorization'] = 'Bearer ' + configuredPaths.apiKey;
-            }
+            const context = await searchDocs(text);
+            const contextText = context
+                .map(doc => \`Source: \${doc.title}\\nContent: \${doc.content}\`)
+                .join('\\n---\\n');
             const response = await fetch(configuredPaths.apiEndpoint, {
                 method: 'POST',
-                headers: requestHeaders,
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     messages: messages,
+                    context: contextText,
                 }),
             });`;
   const NEW_SEND = `    const sendMessage = useCallback(async (text) => {
