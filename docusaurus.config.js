@@ -86,17 +86,13 @@ const config = {
         name: 'dev-proxy',
         configureWebpack(config, { isServer }) {
           if (!isServer && !process.env.VERCEL) {
-            const { execSync } = _require('child_process');
-            let ip = 'localhost';
-            try {
-              ip = execSync("ip addr show eth0 | grep 'inet ' | awk '{print $2}' | cut -d/ -f1").toString().trim();
-            } catch {}
+            const target = process.env.CHAT_BACKEND_URL || 'http://localhost:3001';
             config.devServer = config.devServer || {};
             config.devServer.proxy = [
               ...(config.devServer.proxy || []),
               {
                 context: ['/api/chat'],
-                target: `http://${ip}:3001`,
+                target,
                 changeOrigin: true,
               },
             ];
@@ -108,7 +104,6 @@ const config = {
 
   customFields: {
     chatApiEndpoint: process.env.CHAT_API_ENDPOINT || '/api/chat',
-    chatApiKey: process.env.CHAT_API_KEY || '',
   },
 
   themes: [

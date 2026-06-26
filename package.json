@@ -5,14 +5,14 @@
   "scripts": {
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
-    "build": "docusaurus build && node node_modules/vetradocs-docusaurus/bin/build-index.mjs && cp static/search-index.json build/search-index.json",
+    "build": "docusaurus build && node node_modules/vetradocs-docusaurus/bin/build-index.mjs && node -e \"require('fs').copyFileSync('static/search-index.json','build/search-index.json')\"",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
     "clear": "docusaurus clear",
     "serve": "docusaurus serve",
     "backend": "cd chat-backend && node server.js",
     "dev": "docusaurus start --host 0.0.0.0",
-    "postinstall": "bash patches/postinstall.sh",
+    "postinstall": "node patches/patch-vetradocs.mjs",
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids"
   },

@@ -28,20 +28,23 @@ module.exports = async function handler(req, res) {
         }
     }
 
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+    const rawIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+    const ip = rawIp.split(',')[0].trim();
     if (!checkRateLimit(ip)) {
         return res.status(429).json({ error: 'Too many requests. Please try again later.' });
     }
 
     try {
-        const { messages, context } = req.body;
+        const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+        const { messages, context } = body;
+        const safeContext = context ? context.slice(0, 10000) : '';
 
         let fullMessages = messages || [];
-        if (context) {
+        if (safeContext) {
             fullMessages = [
                 {
                     role: 'system',
-                    content: `你是"华师一高校指南"的AI助手，帮助高中生了解大学专业。\n\n请使用下方指南内容中的信息来回答问题。回答时请自然引导用户去指南中阅读对应章节的完整内容（告知具体篇目标题），例如"指南的《专业名称》篇有详细介绍"。\n\n指南内容：\n${context}`,
+                    content: `你是"华师一高校指南"的AI助手，帮助高中生了解大学专业。\n\n请使用下方指南内容中的信息来回答问题。回答时请自然引导用户去指南中阅读对应章节的完整内容（告知具体篇目标题），例如"指南的《专业名称》篇有详细介绍"。\n\n指南内容：\n${safeContext}`,
                 },
                 ...fullMessages,
             ];
