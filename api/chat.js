@@ -5,11 +5,13 @@ module.exports = async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const authHeader = req.headers.authorization;
-    const apiKey = process.env.CHAT_API_KEY || 'vzpcbu6am0dr1k056y1dgg';
+    const configuredKey = process.env.CHAT_API_KEY;
 
-    if (authHeader && authHeader !== `Bearer ${apiKey}`) {
-        return res.status(401).json({ error: 'Unauthorized' });
+    if (configuredKey && configuredKey.trim() !== '') {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || authHeader !== `Bearer ${configuredKey}`) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
     }
 
     try {

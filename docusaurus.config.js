@@ -108,7 +108,7 @@ const config = {
 
   customFields: {
     chatApiEndpoint: process.env.CHAT_API_ENDPOINT || '/api/chat',
-    chatApiKey: process.env.CHAT_API_KEY || 'vzpcbu6am0dr1k056y1dgg',
+    chatApiKey: process.env.CHAT_API_KEY || '',
   },
 
   themes: [

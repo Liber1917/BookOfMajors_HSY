@@ -111,7 +111,7 @@ Vercel CDN
    | `LLM_API_KEY` | **是** | DeepSeek API Key |
    | `LLM_BASE_URL` | 否 | 默认 `https://api.deepseek.com/v1` |
    | `LLM_MODEL` | 否 | 默认 `deepseek-v4-flash` |
-   | `CHAT_API_KEY` | 否 | 前后端认证 key，默认 `vzpcbu6am0dr1k056y1dgg`，前后端需一致 |
+    | `CHAT_API_KEY` | 否 | 前后端认证 key，若设置则强制校验；前后端须一致 |
 
 4. **部署完成**
 
@@ -138,7 +138,7 @@ node .../build-index.mjs             → 扫描 docs/ 生成搜索索引 static/
 cp static/search-index.json build/   → 复制到构建输出目录
 ```
 
-> **注意**：`docusaurus build` 会在构建时读取 `CHAT_API_KEY` 环境变量并嵌入前端静态页面中。如果未设置该变量，则使用默认值 `vzpcbu6am0dr1k056y1dgg`。API 运行时同样读取该变量，默认值相同，因此不设也能工作。
+> **注意**：`docusaurus build` 会在构建时读取 `CHAT_API_KEY` 环境变量并嵌入前端静态页面中。
 
 ### 本地模拟 Vercel 环境
 
@@ -200,7 +200,7 @@ npm install
 ```
 PORT=3001
 FRONTEND_URL=https://你的前端域名
-CHAT_API_KEY=vzpcbu6am0dr1k056y1dgg
+CHAT_API_KEY=your-chat-api-key
 LLM_API_KEY=sk-你的DeepSeekKey
 LLM_BASE_URL=https://api.deepseek.com/v1
 LLM_MODEL=deepseek-v4-flash
@@ -294,9 +294,9 @@ sudo certbot --nginx -d 你的域名.com
 | `LLM_API_KEY` | **是** | 无 | DeepSeek API Key | Vercel / Linux |
 | `LLM_BASE_URL` | 否 | `https://api.deepseek.com/v1` | API 地址 | Vercel / Linux |
 | `LLM_MODEL` | 否 | `deepseek-v4-flash` | 模型名 | Vercel / Linux |
-| `CHAT_API_KEY` | 否 | `vzpcbu6am0dr1k056y1dgg` | 前后端认证 key，前后端须一致 | Vercel / Linux |
+| `CHAT_API_KEY` | 否 | — | 前后端认证 key，若设置则强制校验；前后端须一致 | Vercel / Linux |
 
-> **关于 `CHAT_API_KEY`**：前后端代码都内置了默认值。不设环境变量也能工作（前后端使用相同默认值）。如需自定义，添加环境变量即可，前后端值必须一致。
+> **关于 `CHAT_API_KEY`**：仅当显式设置环境变量时，API 才会强制校验 `Authorization` header。前后端值必须一致。不设置则不校验。
 >
 > **关于 `.env` 文件**：仅用于本地开发，已加入 `.gitignore`，**不会**提交到 Git。生产环境（Vercel Dashboard 或 Linux 系统环境变量）另有配置方式。
 
