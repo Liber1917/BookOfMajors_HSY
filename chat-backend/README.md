@@ -20,7 +20,7 @@ This is a standard Node.js server for **Vetradocs**, built with **Express**. It 
     Update `.env` with your values:
     * **`PORT`**: Server port (default: 3000).
     * **`FRONTEND_URL`**: URL of your documentation site for CORS (e.g., `http://localhost:5173`).
-    * **`API_KEY`**: A secure secret key you create. This secures the endpoint from unauthorized use.
+     * **`CHAT_API_KEY`**: A secure secret key you create. This secures the endpoint from unauthorized use.
     * **`LLM_API_KEY`**: Your API Key from OpenAI, Anthropic, or similar.
     * **`LLM_BASE_URL`**: The API endpoint (e.g., `https://api.openai.com/v1`).
     * **`LLM_MODEL`**: The model to use (e.g., `gpt-3.5-turbo`, `gpt-4o`).
@@ -55,7 +55,7 @@ Add to your `.env` file:
 
 ```bash
 VITE_VETRADOCS_BACKEND_URL=http://localhost:3000/api/chat
-VITE_VETRADOCS_API_KEY=your-secret-api-key
+VITE_VETRADOCS_CHAT_API_KEY=your-secret-api-key
 ```
 
 ### 2. Docusaurus
@@ -67,7 +67,7 @@ Pass the props to `VetradocsChat`:
 ```jsx
 <VetradocsChat
   apiEndpoint="http://localhost:3000/api/chat"
-  apiKey="your-secret-api-key"
+   chatApiKey="your-secret-api-key"
 />
 ```
 
@@ -78,7 +78,7 @@ If you are using `vetradocs-scalar`:
 ```html
 <vetradocs-widget
   api-endpoint="http://localhost:3000/api/chat"
-  api-key="your-secret-api-key"
+     chat-api-key="your-secret-api-key"
 ></vetradocs-widget>
 ```
 
