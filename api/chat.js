@@ -1,6 +1,6 @@
-import OpenAI from 'openai';
+const OpenAI = require('openai');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
     if (req.method !== 'POST') {
         res.status(405).json({ error: 'Method not allowed' });
         return;
@@ -56,4 +56,4 @@ export default async function handler(req, res) {
         console.error('[api/chat] Error:', error);
         res.status(500).json({ error: error.message });
     }
-}
+};
