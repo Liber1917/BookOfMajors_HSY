@@ -120,7 +120,7 @@ if (src.includes('@orama/orama')) {
     src = src.replace(OLD, NEW);
     changed = true;
   } else {
-    console.log('vetradocs: WARNING - searchDocs OLD pattern not found');
+    throw new Error('vetradocs: FAILED - searchDocs OLD pattern not found. The upstream vetradocs-docusaurus has changed, patch needs update.');
   }
 }
 
@@ -183,7 +183,7 @@ if (!src.includes('来源：《')) {
     src = src.replace(OLD_SEND, NEW_SEND);
     changed = true;
   } else {
-    console.log('vetradocs: WARNING - sendMessage OLD pattern not found');
+    throw new Error('vetradocs: FAILED - sendMessage OLD pattern not found. The upstream vetradocs-docusaurus has changed, patch needs update.');
   }
 }
 

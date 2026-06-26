@@ -26,7 +26,7 @@ function rateLimit(req, res, next) {
 }
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
 app.use(cors({
     origin: process.env.FRONTEND_URL || '*'
@@ -75,7 +75,7 @@ ${context}` },
             stream: true,
         });
 
-        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Content-Type', 'text/plain');
         res.setHeader('Cache-Control', 'no-cache');
         res.setHeader('Connection', 'keep-alive');
 

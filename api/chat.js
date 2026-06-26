@@ -58,7 +58,7 @@ module.exports = async function handler(req, res) {
             stream: true,
         });
 
-        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Content-Type', 'text/plain');
         res.setHeader('Cache-Control', 'no-cache');
         res.setHeader('Connection', 'keep-alive');
         res.status(200);

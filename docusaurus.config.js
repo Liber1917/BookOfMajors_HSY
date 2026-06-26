@@ -76,7 +76,7 @@ const config = {
           );
           config.resolve.fallback = {
             ...config.resolve.fallback,
-            buffer: _require.resolve('buffer/package.json').replace('/package.json', ''),
+            buffer: _require.resolve('buffer/'),
           };
         },
       };
