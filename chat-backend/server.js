@@ -8,6 +8,23 @@ import { dirname, resolve } from 'path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: resolve(__dirname, '.env') });
 
+const rateLimitMap = new Map();
+const RATE_WINDOW_MS = 60 * 1000;
+const RATE_MAX = 20;
+
+function rateLimit(req, res, next) {
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+    const now = Date.now();
+    const entry = rateLimitMap.get(ip) || [];
+    const recent = entry.filter(t => now - t < RATE_WINDOW_MS);
+    if (recent.length >= RATE_MAX) {
+        return res.status(429).json({ error: 'Too many requests. Please try again later.' });
+    }
+    recent.push(now);
+    rateLimitMap.set(ip, recent);
+    next();
+}
+
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -35,7 +52,7 @@ const openai = new OpenAI({
     apiKey: process.env.LLM_API_KEY,
 });
 
-app.post('/api/chat', authMiddleware, async (req, res) => {
+app.post('/api/chat', authMiddleware, rateLimit, async (req, res) => {
     try {
         const { messages, context } = req.body;
         console.log('[Chat] messages:', messages?.length, 'context:', context ? context.length + ' chars' : 'none');

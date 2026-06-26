@@ -1,5 +1,19 @@
 const OpenAI = require('openai');
 
+const rateLimitMap = new Map();
+const RATE_WINDOW_MS = 60 * 1000;
+const RATE_MAX = 20;
+
+function checkRateLimit(ip) {
+    const now = Date.now();
+    const entry = rateLimitMap.get(ip) || [];
+    const recent = entry.filter(t => now - t < RATE_WINDOW_MS);
+    if (recent.length >= RATE_MAX) return false;
+    recent.push(now);
+    rateLimitMap.set(ip, recent);
+    return true;
+}
+
 module.exports = async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
@@ -12,6 +26,11 @@ module.exports = async function handler(req, res) {
         if (!authHeader || authHeader !== `Bearer ${configuredKey}`) {
             return res.status(401).json({ error: 'Unauthorized' });
         }
+    }
+
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+    if (!checkRateLimit(ip)) {
+        return res.status(429).json({ error: 'Too many requests. Please try again later.' });
     }
 
     try {
