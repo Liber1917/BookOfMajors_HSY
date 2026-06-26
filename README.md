@@ -79,12 +79,21 @@ Vercel
 
 3. **设置环境变量**（Vercel Dashboard → Settings → Environment Variables）
 
+   必须添加以下变量：
+
+   | 变量 | 必填 | 说明 |
+   |------|------|------|
+   | `LLM_API_KEY` | **是** | DeepSeek API Key，如 `sk-xxxxxxxx` |
+   | `CHAT_API_KEY` | **是** | 前后端认证 Key，值随意设置，但前后端必须一致 |
+
+   > **为什么 `CHAT_API_KEY` 必须设？** 前端在构建时会把该值嵌入静态页面中，每次请求 API 都会带上这个 Key 做 Bearer 认证。如果 `CHAT_API_KEY` 不设，API 函数会返回 401 错误。设置方法：Vercel Dashboard → Settings → Environment Variables → 添加 `CHAT_API_KEY`，值填入 `vzpcbu6am0dr1k056y1dgg`（可直接用这个值，也可改成任意字符串）。
+
+   可选变量：
+
    | 变量 | 说明 |
    |------|------|
-   | `CHAT_API_KEY` | 前后端认证 Key，与 `docusaurus.config.js` 中 `chatApiKey` 一致 |
-   | `LLM_API_KEY` | DeepSeek API Key |
-   | `LLM_BASE_URL` | 可选，默认 `https://api.deepseek.com/v1` |
-   | `LLM_MODEL` | 可选，默认 `deepseek-v4-flash` |
+   | `LLM_BASE_URL` | API 地址，默认 `https://api.deepseek.com/v1` |
+   | `LLM_MODEL` | 模型名，默认 `deepseek-v4-flash` |
 
 4. **部署完成**
    - 前端访问 `https://你的域名.vercel.app`
@@ -117,12 +126,12 @@ node server.js
 
 ## 环境变量说明
 
-| 变量 | 用途 | 生效位置 |
-|------|------|----------|
-| `CHAT_API_KEY` | 前后端认证 Key（可选，不设则跳过认证） | Vercel / chat-backend / docusaurus.config.js |
-| `LLM_API_KEY` | DeepSeek API Key | Vercel / chat-backend |
-| `LLM_BASE_URL` | API 地址，默认 DeepSeek | Vercel / chat-backend |
-| `LLM_MODEL` | 模型名，默认 `deepseek-v4-flash` | Vercel / chat-backend |
+| 变量 | 必填 | 用途 | 生效位置 |
+|------|------|------|----------|
+| `CHAT_API_KEY` | **是** | 前后端认证 Key，前后端必须一致 | Vercel / chat-backend / docusaurus.config.js |
+| `LLM_API_KEY` | **是** | DeepSeek API Key | Vercel / chat-backend |
+| `LLM_BASE_URL` | 否 | API 地址，默认 DeepSeek | Vercel / chat-backend |
+| `LLM_MODEL` | 否 | 模型名，默认 `deepseek-v4-flash` | Vercel / chat-backend |
 
 > `.env` 文件仅用于本地开发，**不会**提交到 Git。Vercel 部署时必须在 Dashboard 设置环境变量。
 
