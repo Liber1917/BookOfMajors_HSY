@@ -1,0 +1,59 @@
+import OpenAI from 'openai';
+
+export default async function handler(req, res) {
+    if (req.method !== 'POST') {
+        res.status(405).json({ error: 'Method not allowed' });
+        return;
+    }
+
+    const apiKey = process.env.CHAT_API_KEY;
+    if (apiKey && apiKey.trim() !== '') {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || authHeader !== `Bearer ${apiKey}`) {
+            res.status(401).json({ error: 'Unauthorized' });
+            return;
+        }
+    }
+
+    try {
+        const { messages, context } = req.body;
+
+        let fullMessages = messages || [];
+        if (context) {
+            fullMessages = [
+                {
+                    role: 'system',
+                    content: `你是"华师一高校指南"的AI助手，帮助高中生了解大学专业。\n\n请使用下方指南内容中的信息来回答问题。回答时请自然引导用户去指南中阅读对应章节的完整内容（告知具体篇目标题），例如"指南的《专业名称》篇有详细介绍"。\n\n指南内容：\n${context}`,
+                },
+                ...fullMessages,
+            ];
+        }
+
+        const openai = new OpenAI({
+            baseURL: process.env.LLM_BASE_URL || 'https://api.deepseek.com/v1',
+            apiKey: process.env.LLM_API_KEY,
+        });
+
+        const completion = await openai.chat.completions.create({
+            messages: fullMessages,
+            model: process.env.LLM_MODEL || 'deepseek-v4-flash',
+            stream: true,
+        });
+
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+        res.status(200);
+
+        for await (const chunk of completion) {
+            const content = chunk.choices[0]?.delta?.content || '';
+            if (content) {
+                res.write(content);
+            }
+        }
+        res.end();
+    } catch (error) {
+        console.error('[api/chat] Error:', error);
+        res.status(500).json({ error: error.message });
+    }
+}
