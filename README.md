@@ -119,12 +119,10 @@ node server.js
 
 | 变量 | 用途 | 生效位置 |
 |------|------|----------|
-| `CHAT_API_KEY` | 前后端认证 Key | Vercel / chat-backend / docusaurus.config.js |
+| `CHAT_API_KEY` | 前后端认证 Key（可选，不设则跳过认证） | Vercel / chat-backend / docusaurus.config.js |
 | `LLM_API_KEY` | DeepSeek API Key | Vercel / chat-backend |
 | `LLM_BASE_URL` | API 地址，默认 DeepSeek | Vercel / chat-backend |
 | `LLM_MODEL` | 模型名，默认 `deepseek-v4-flash` | Vercel / chat-backend |
-| `CHAT_API_ENDPOINT` | 前端 API 地址（默认 `/api/chat`） | 仅 `docusaurus.config.js` |
-| `CHAT_API_KEY` | 前端认证 Key | 仅 `docusaurus.config.js` |
 
 > `.env` 文件仅用于本地开发，**不会**提交到 Git。Vercel 部署时必须在 Dashboard 设置环境变量。
 
