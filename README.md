@@ -84,9 +84,9 @@ Vercel
    | 变量 | 必填 | 说明 |
    |------|------|------|
    | `LLM_API_KEY` | **是** | DeepSeek API Key，如 `sk-xxxxxxxx` |
-   | `CHAT_API_KEY` | **是** | 前后端认证 Key，值随意设置，但前后端必须一致 |
+   | `CHAT_API_KEY` | 推荐 | 前后端认证 Key，默认 `vzpcbu6am0dr1k056y1dgg`。不设则前后端都使用此默认值，设了则必须前后端一致。 |
 
-   > **为什么 `CHAT_API_KEY` 必须设？** 前端在构建时会把该值嵌入静态页面中，每次请求 API 都会带上这个 Key 做 Bearer 认证。如果 `CHAT_API_KEY` 不设，API 函数会返回 401 错误。设置方法：Vercel Dashboard → Settings → Environment Variables → 添加 `CHAT_API_KEY`，值填入 `vzpcbu6am0dr1k056y1dgg`（可直接用这个值，也可改成任意字符串）。
+   > **关于 `CHAT_API_KEY`**：前后端代码都内置了默认值 `vzpcbu6am0dr1k056y1dgg`。不设环境变量也能工作。如果想自定义 Key，在 Vercel Dashboard 添加 `CHAT_API_KEY` 即可（前端构建时和 API 运行时都会读取，值必须一致）。
 
    可选变量：
 
@@ -128,7 +128,7 @@ node server.js
 
 | 变量 | 必填 | 用途 | 生效位置 |
 |------|------|------|----------|
-| `CHAT_API_KEY` | **是** | 前后端认证 Key，前后端必须一致 | Vercel / chat-backend / docusaurus.config.js |
+| `CHAT_API_KEY` | 否（有默认值） | 前后端认证 Key，默认 `vzpcbu6am0dr1k056y1dgg` | Vercel / chat-backend / docusaurus.config.js |
 | `LLM_API_KEY` | **是** | DeepSeek API Key | Vercel / chat-backend |
 | `LLM_BASE_URL` | 否 | API 地址，默认 DeepSeek | Vercel / chat-backend |
 | `LLM_MODEL` | 否 | 模型名，默认 `deepseek-v4-flash` | Vercel / chat-backend |

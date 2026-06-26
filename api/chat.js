@@ -6,7 +6,7 @@ export default async function handler(req, res) {
         return;
     }
 
-    const apiKey = process.env.CHAT_API_KEY;
+    const apiKey = process.env.CHAT_API_KEY || 'vzpcbu6am0dr1k056y1dgg';
     if (apiKey && apiKey.trim() !== '') {
         const authHeader = req.headers.authorization;
         if (!authHeader || authHeader !== `Bearer ${apiKey}`) {
