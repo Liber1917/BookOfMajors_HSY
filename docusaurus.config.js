@@ -104,6 +104,7 @@ const config = {
 
   customFields: {
     chatApiEndpoint: process.env.CHAT_API_ENDPOINT || '/api/chat',
+    chatIndexPath: '/rag-index.json',
   },
 
   themes: [
