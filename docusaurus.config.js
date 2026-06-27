@@ -111,7 +111,7 @@ const config = {
     ['@easyops-cn/docusaurus-search-local', {
       language: ['zh'],
       indexBlog: false,
-      searchResultLimits: 20,
+      searchResultLimits: 8,
       searchResultContextMaxLength: 200,
     }],
   ],
