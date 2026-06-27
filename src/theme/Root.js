@@ -6,19 +6,17 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 
 export default function Root({ children }) {
   const { siteConfig } = useDocusaurusContext();
-  const cfg = siteConfig.customFields;
+  const endpoint = siteConfig.customFields?.chatApiEndpoint;
   return (
     <>
       {children}
       <VetradocsFloatingBar
-        apiEndpoint={cfg.chatApiEndpoint}
-        apiKey={cfg.chatApiKey}
+        apiEndpoint={endpoint}
         placeholder="问一个关于高校指南的问题..."
         accentColor="#f97316"
       />
       <VetradocsChat
-        apiEndpoint={cfg.chatApiEndpoint}
-        apiKey={cfg.chatApiKey}
+        apiEndpoint={endpoint}
         title="AI 问答助手"
         placeholder="输入你的问题..."
         accentColor="#f97316"
