@@ -74,6 +74,7 @@ const config = {
               _require.resolve('stream-browserify')
             )
           );
+          config.resolve = config.resolve || {};
           config.resolve.fallback = {
             ...config.resolve.fallback,
             buffer: _require.resolve('buffer/'),
@@ -104,7 +105,7 @@ const config = {
 
   customFields: {
     chatApiEndpoint: process.env.CHAT_API_ENDPOINT || '/api/chat',
-    chatIndexPath: '/rag-index.json',
+    chatIndexPath: process.env.CHAT_INDEX_PATH || '/rag-index.json',
   },
 
   themes: [
