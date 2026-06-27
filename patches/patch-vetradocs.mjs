@@ -199,3 +199,14 @@ if (binSrc.includes('\r\n')) {
   writeFileSync(binPath, binSrc);
   console.log('vetradocs: fixed CRLF in build-index.mjs');
 }
+
+// Fix 4: Click floating bar opens chat sidebar directly
+const floatPath = BASE + '/dist/theme/VetradocsFloatingBar/index.js';
+let floatSrc = readFileSync(floatPath, 'utf8');
+if (floatSrc.includes('onClick: focusInput')) {
+  floatSrc = floatSrc.replace('onClick: focusInput', 'onClick: openChat');
+  writeFileSync(floatPath, floatSrc);
+  console.log('vetradocs: floating bar click now opens chat sidebar');
+} else {
+  throw new Error('vetradocs: FAILED - focusInput pattern not found in VetradocsFloatingBar');
+}
