@@ -75,6 +75,10 @@ module.exports = async function handler(req, res) {
         res.end();
     } catch (error) {
         console.error('[api/chat] Error:', error);
-        res.status(500).json({ error: error.message });
+        if (res.headersSent) {
+            res.end();
+        } else {
+            res.status(500).json({ error: 'Internal server error' });
+        }
     }
 };

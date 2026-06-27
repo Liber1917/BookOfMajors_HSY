@@ -8,7 +8,7 @@ try {
   mkdirSync(BASE + '/dist/theme/VetradocsFloatingBar', { recursive: true });
   copyFileSync(BASE + '/src/theme/VetradocsChat/styles.css', BASE + '/dist/theme/VetradocsChat/styles.css');
   copyFileSync(BASE + '/src/theme/VetradocsFloatingBar/styles.css', BASE + '/dist/theme/VetradocsFloatingBar/styles.css');
-} catch (e) { console.error('CSS copy failed:', e.message); }
+} catch (e) { console.error('CSS copy failed:', e.message); process.exit(1); }
 
 // Fix 2: Patch useVetradocs.js
 const hookPath = BASE + '/dist/hooks/useVetradocs.js';

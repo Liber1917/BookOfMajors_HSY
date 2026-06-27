@@ -92,7 +92,11 @@ ${safeContext}` },
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: error.message });
+        if (res.headersSent) {
+            res.end();
+        } else {
+            res.status(500).json({ error: 'Internal server error' });
+        }
     }
 });
 
