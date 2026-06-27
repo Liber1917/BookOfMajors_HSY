@@ -33,11 +33,7 @@ if (!src.includes('config.apiKey')) {
   changed = true;
 }
 
-// 2c. Remove webpackIgnore (if present)
-if (src.includes('webpackIgnore')) {
-  src = src.replace("/* webpackIgnore: true */ ", "");
-  changed = true;
-}
+// 2c. Keep webpackIgnore (still needed because @orama/plugin-data-persistence is imported in loadIndex)
 
 // 2d. Add docsCache variable
 if (!src.includes('docsCache')) {

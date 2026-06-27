@@ -84,7 +84,7 @@ const config = {
     function() {
       return {
         name: 'dev-proxy',
-        configureWebpack(config, { isServer }) {
+        configureWebpack(config, isServer) {
           if (!isServer && !process.env.VERCEL) {
             const target = process.env.CHAT_BACKEND_URL || 'http://localhost:3001';
             config.devServer = config.devServer || {};

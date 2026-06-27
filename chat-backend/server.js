@@ -55,19 +55,20 @@ const openai = new OpenAI({
 
 app.post('/api/chat', authMiddleware, rateLimit, async (req, res) => {
     try {
-        const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
-        const { messages, context } = body;
-        const safeContext = context ? context.slice(0, 10000) : '';
-        console.log('[Chat] messages:', messages?.length, 'context:', safeContext ? safeContext.length + ' chars' : 'none');
-        let fullMessages = messages || [];
+        const { messages, context } = req.body || {};
+        const safeMessages = Array.isArray(messages) ? messages : [];
+        const safeContext = typeof context === 'string' ? context.slice(0, 10000) : '';
+        console.log('[Chat] messages:', safeMessages?.length, 'context:', safeContext ? safeContext.length + ' chars' : 'none');
+        let fullMessages = safeMessages;
         if (safeContext) {
             fullMessages = [
                 { role: 'system', content: `你是"华师一高校指南"的AI助手，帮助高中生了解大学专业。
 
 请使用下方指南内容中的信息来回答问题。回答时请自然引导用户去指南中阅读对应章节的完整内容（告知具体篇目标题），例如"指南的《专业名称》篇有详细介绍"。
 
-指南内容：
-${safeContext}` },
+---BEGIN CONTEXT---
+${safeContext}
+---END CONTEXT---` },
                 ...fullMessages,
             ];
         }
@@ -82,13 +83,22 @@ ${safeContext}` },
         res.setHeader('Cache-Control', 'no-cache');
         res.setHeader('Connection', 'keep-alive');
 
+        req.on('close', () => {
+            if (typeof completion.controller?.abort === 'function') {
+                completion.controller.abort();
+            }
+        });
+
         for await (const chunk of completion) {
+            if (req.destroyed) break;
             const content = chunk.choices[0]?.delta?.content || '';
             if (content) {
-                res.write(content); // Simple streaming for demo
+                res.write(content);
             }
         }
-        res.end();
+        if (!req.destroyed) {
+            res.end();
+        }
 
     } catch (error) {
         console.error(error);

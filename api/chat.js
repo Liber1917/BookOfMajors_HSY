@@ -36,15 +36,15 @@ module.exports = async function handler(req, res) {
 
     try {
         const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
-        const { messages, context } = body;
-        const safeContext = context ? context.slice(0, 10000) : '';
+        const messages = Array.isArray(body.messages) ? body.messages : [];
+        const context = typeof body.context === 'string' ? body.context.slice(0, 10000) : '';
 
-        let fullMessages = messages || [];
-        if (safeContext) {
+        let fullMessages = messages;
+        if (context) {
             fullMessages = [
                 {
                     role: 'system',
-                    content: `你是"华师一高校指南"的AI助手，帮助高中生了解大学专业。\n\n请使用下方指南内容中的信息来回答问题。回答时请自然引导用户去指南中阅读对应章节的完整内容（告知具体篇目标题），例如"指南的《专业名称》篇有详细介绍"。\n\n指南内容：\n${safeContext}`,
+                    content: `你是"华师一高校指南"的AI助手，帮助高中生了解大学专业。\n\n请使用下方指南内容中的信息来回答问题。回答时请自然引导用户去指南中阅读对应章节的完整内容（告知具体篇目标题），例如"指南的《专业名称》篇有详细介绍"。\n\n---BEGIN CONTEXT---\n${context}\n---END CONTEXT---`,
                 },
                 ...fullMessages,
             ];
@@ -66,13 +66,22 @@ module.exports = async function handler(req, res) {
         res.setHeader('Connection', 'keep-alive');
         res.status(200);
 
+        req.on('close', () => {
+            if (typeof completion.controller?.abort === 'function') {
+                completion.controller.abort();
+            }
+        });
+
         for await (const chunk of completion) {
+            if (req.destroyed) break;
             const content = chunk.choices[0]?.delta?.content || '';
             if (content) {
                 res.write(content);
             }
         }
-        res.end();
+        if (!req.destroyed) {
+            res.end();
+        }
     } catch (error) {
         console.error('[api/chat] Error:', error);
         if (res.headersSent) {
