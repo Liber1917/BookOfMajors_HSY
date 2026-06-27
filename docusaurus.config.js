@@ -108,7 +108,12 @@ const config = {
   },
 
   themes: [
-    '@easyops-cn/docusaurus-search-local',
+    ['@easyops-cn/docusaurus-search-local', {
+      language: ['zh'],
+      indexBlog: false,
+      searchResultLimits: 20,
+      searchResultContextMaxLength: 200,
+    }],
   ],
 
   themeConfig:
