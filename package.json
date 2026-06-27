@@ -5,7 +5,7 @@
   "scripts": {
     "docusaurus": "docusaurus",
     "start": "docusaurus start",
-    "build": "docusaurus build && node node_modules/vetradocs-docusaurus/bin/build-index.mjs && node -e \"require('fs').copyFileSync('static/search-index.json','build/search-index.json')\"",
+    "build": "node patches/patch-vetradocs.mjs && docusaurus build && node node_modules/vetradocs-docusaurus/bin/build-index.mjs && node -e \"require('fs').copyFileSync('static/search-index.json','build/search-index.json')\"",
     "swizzle": "docusaurus swizzle",
     "deploy": "docusaurus deploy",
     "clear": "docusaurus clear",

@@ -207,6 +207,6 @@ if (floatSrc.includes('onClick: focusInput')) {
   floatSrc = floatSrc.replace('onClick: focusInput', 'onClick: openChat');
   writeFileSync(floatPath, floatSrc);
   console.log('vetradocs: floating bar click now opens chat sidebar');
-} else {
+} else if (!floatSrc.includes('onClick: openChat')) {
   throw new Error('vetradocs: FAILED - focusInput pattern not found in VetradocsFloatingBar');
 }
